@@ -119,10 +119,10 @@ function brushah() {
 
 //generate the brush
 var brushSvg = d3.select("#brush svg")
-.attr({width: cw + 100, height: ch + 100 })
+.attr({width: cw + 100, height: ch + 50 })
 var bg = brushSvg.append("g")
 .classed("control", true)
-.attr("transform", "translate(" + [50, 50] + ")")
+.attr("transform", "translate(" + [50, 20] + ")")
 brush(bg)
 bg.selectAll("rect").attr("height", ch)
 bg.selectAll("*").style("visibility", "visible")
@@ -175,12 +175,13 @@ charts.enter()
 // ==================================
 var water = topojson.object(bayarea, bayarea.objects.bayareaGEO);
 var width = 850;
-var height = 500;
+var height = 300;
 
 var lonlat = [-122.4, 37.8];
 var projection = d3.geo.mercator()
   .center(lonlat)
-  .scale(77480)
+  //.scale(77480)
+  .scale(140115)
   .translate([width/2, height/2])
 
 var path = d3.geo.path()
@@ -189,6 +190,25 @@ var path = d3.geo.path()
 var g = d3.select("#map svg")
 .attr({width: width, height: height})
 .append("g")
+
+var zoom = d3.behavior.zoom()
+    .translate(projection.translate())
+    .scale(projection.scale())
+    .on("zoom", zoomed);
+function zoomed() {
+  projection.translate(d3.event.translate).scale(d3.event.scale);
+  g.selectAll(".water").attr("d", path(water));
+  g.selectAll("circle.pems").attr({
+    cx: function(d,i) {
+      return projection([d.lon, d.lat])[0]
+    },
+    cy: function(d,i) {
+      return projection([d.lon, d.lat])[1]
+    }
+  })
+}
+g.call(zoom);
+
 
 g.append("rect")
     .attr("class", "background")
