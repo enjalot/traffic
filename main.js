@@ -5,11 +5,11 @@
 var strikes = [];
 var afterstrikes = [];
 var sensors = [
-  pems402814,
+  pems402818,
   pems402816,
   //pems402817,
-  pems402818,
   pems402827,
+  pems402814,
 ];
 sensors.forEach(function(sensor) {
   sensor.forEach(function(d) {
@@ -136,12 +136,12 @@ charts.enter()
   .each(function(data, i) {
     //set up the card for each sensor
     var dis = d3.select(this);
-    dis.style("border", "3px solid " + sensorColors(i));
+    dis.style("border", "2px solid " + sensorColors(i));
     var svg = dis.append("svg")
       .attr({width: 400, height: 180 })
 
     //generate the plot for the week of the strike
-    var strike = plot().data(data.filter(filter(strikeStart, strikeEnd)))
+    var strike = plot(true).data(data.filter(filter(strikeStart, strikeEnd)))
     var strikeg = svg.append("g")
       .attr("transform", "translate(" + [20, 20] + ")")
     strike(strikeg)
@@ -237,6 +237,20 @@ circles.attr({
   "fill-opacity": 0.7,
   stroke: function(d,i) { return sensorColors(i) },
   title: function(d,i) { return d.id }
+})
+.on("mouseover", function(d,i) {
+  d3.select(this).style("stroke-width", 3)
+  var color = d3.rgb(occupyColor(i));
+  d3.selectAll("div.chart")
+    .filter(function(d,j) { return i == j })
+    .style("background-color", "rgba(" + [color.r, color.g, color.b, 0.05] + ")")
+})
+.on("mouseout", function(d,i) {
+  d3.select(this).style("stroke-width", 1)
+  d3.selectAll("div.chart")
+    .filter(function(d,j) { return i == j })
+    .style("background-color", "");
+
 })
 
 
