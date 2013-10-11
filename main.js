@@ -207,7 +207,10 @@ function zoomed() {
     }
   })
 }
-g.call(zoom);
+g.call(zoom)
+  .on("mousewheel.zoom", null)
+  .on("wheel.zoom", null)
+  .on("scroll.zoom", null)
 
 
 g.append("rect")
