@@ -1,5 +1,5 @@
 #content {
-  width: 100%;
+  width: 899px;
   position:absolute;
 }
 
@@ -9,11 +9,11 @@
 }
 
 #charts {
-  width: 900px;
+  width: 899px;
   margin: 0px auto;
 }
 #map {
-  width: 900px;
+  width: 899px;
   margin: 0px auto;
 }
 .chart {
