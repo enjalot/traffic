@@ -1,0 +1,106 @@
+#content {
+  width: 100%;
+  position:absolute;
+}
+
+#brush {
+  width: 500px;
+  margin: 0px auto;
+}
+
+#charts {
+  width: 800px;
+  margin: 0px auto;
+}
+.chart {
+  float:left;
+  margin: 10px;
+}
+
+.tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+.hour {
+  /*fill: #317FD3;*/
+  fill-opacity: 0.9;
+}
+
+.afterstrike {
+  font-size: 10px;
+  text-align: center;
+  position: relative;
+  top: -15px;
+  width: 100%;
+}
+.bg {
+  fill-opacity: 0.3;
+  fill: #fff;
+}
+.sums {
+  fill: #317FD3;
+  fill-opacity: 0.7;
+}
+
+
+.x-axis path {
+  fill: none;
+  stroke: #000;
+}
+.x-axis .tick {
+  font-size: 8px;
+}
+.x-axis .tick line {
+  stroke: #000
+}
+
+/* CONTROL */
+.control .background {
+  fill: #C4C4C4;
+}
+.control .extent {
+  fill:  #F3F79F;
+  fill-opacity: 1;
+  stroke: #000;
+  stroke-width: 1;
+  stroke-opacity: 0.5;
+}
+.control .resize rect {
+  fill: #000000;
+  fill-opacity: 0.25
+}
+
+.highlight {
+  pointer-events: none;
+  fill: #FFF72C;
+  fill-opacity: 0.1;
+  stroke: #1B1D00;
+  stroke-width: 1;
+  stroke-opacity: 0.5;
+}
