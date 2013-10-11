@@ -12,9 +12,25 @@
   width: 900px;
   margin: 0px auto;
 }
+#map {
+  width: 900px;
+  margin: 0px auto;
+}
 .chart {
   float:left;
   margin: 10px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+
+#map .water {
+  fill: #fff;
+  stroke: #000000;
+}
+
+#map .background{
+  fill: #353535;
 }
 
 .tip {

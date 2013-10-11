@@ -54,7 +54,7 @@ function brushah() {
   var sums = strikes.map(function(chart) {
     return chart.highlight(offset, band);
   })
-  var avgsums = afterstrikes.map(function(weeks) {
+  var avgflows = afterstrikes.map(function(weeks) {
     return d3.sum(weeks, function(week) {
       var start = d3.time.hour.offset(week[0].time, offset)
       var end = d3.time.hour.offset(week[0].time, offset + band);
@@ -62,12 +62,28 @@ function brushah() {
       return d3.sum(filtered, function(d) { return d.flow })
     }) / weeks.length
   })
+  var avglanes = afterstrikes.map(function(weeks) {
+    return d3.sum(weeks, function(week) {
+      var start = d3.time.hour.offset(week[0].time, offset)
+      var end = d3.time.hour.offset(week[0].time, offset + band);
+      var filtered = week.filter(filter(start, end));
+      return d3.sum(filtered, function(d) { return d.lanes}) / filtered.length
+    }) / weeks.length
+  })
 
   var charts = d3.selectAll("div.chart");
   charts.each(function(d,i) {
     var sumscale = d3.scale.linear()
-      .domain([0, d3.max([sums[i], avgsums[i]])])
+      .domain([0, d3.max([sums[i].flow, avgflows[i]])])
       .range([0,80]);
+    var rscale = d3.scale.sqrt()
+      .domain([0, d3.max([sums[i].flow, avgflows[i]])])
+      .range([5,15]);
+
+    var sumColor = d3.scale.linear()
+      .domain([0, 0.2])
+      .range(occupyColor.range())
+      .interpolate(d3.interpolateHcl);
 
     var sumbar = d3.select(this).select("svg")
       .selectAll("rect.sumbar").data([sums[i]])
@@ -77,26 +93,31 @@ function brushah() {
     .attr({
       x: 290,
       y: 30,
-      width: sumscale(sums[i]),
+      width: sumscale(sums[i].flow),
       height: 40
-    })
+    }).style("fill", sumColor(sums[i].lanes))
 
     var avgsumbar = d3.select(this).select("svg")
-      .selectAll("rect.avgsumbar").data([avgsums[i]])
+      .selectAll("rect.avgsumbar").data([avgflows[i]])
     avgsumbar.enter()
       .append("rect").classed("avgsumbar", true)
     avgsumbar
     .attr({
       x: 290,
       y: 120,
-      width: sumscale(avgsums[i]),
+      width: sumscale(avgflows[i]),
       height: 40
-    })
-
-
+    }).style("fill", sumColor(avglanes[i]))
+    d3.selectAll("circle.pems")
+      .filter(function(d,j) { return i == j })
+      .attr({
+        r: rscale(sums[i].flow),
+        fill: sumColor(sums[i].lanes)
+      })
   })
 }
 
+//generate the brush
 var brushSvg = d3.select("#brush svg")
 .attr({width: cw + 100, height: ch + 100 })
 var bg = brushSvg.append("g")
@@ -107,19 +128,19 @@ bg.selectAll("rect").attr("height", ch)
 bg.selectAll("*").style("visibility", "visible")
 
 
-
 var charts = d3.select("#charts")
   .selectAll("div.chart")
   .data(sensors)
 charts.enter()
   .append("div").classed("chart", true)
   .each(function(data, i) {
+    //set up the card for each sensor
     var dis = d3.select(this);
-    dis.style("border", "1px solid " + sensorColors(i));
-
+    dis.style("border", "3px solid " + sensorColors(i));
     var svg = dis.append("svg")
       .attr({width: 400, height: 180 })
 
+    //generate the plot for the week of the strike
     var strike = plot().data(data.filter(filter(strikeStart, strikeEnd)))
     var strikeg = svg.append("g")
       .attr("transform", "translate(" + [20, 20] + ")")
@@ -127,6 +148,7 @@ charts.enter()
     strikes.push(strike);
 
 
+    //Generate the plots for the 4 weeks surrounding the strike
     var start = new Date(strikeStart);
     var end = new Date(strikeEnd);
     var weeks = [
@@ -146,19 +168,61 @@ charts.enter()
     afterstrikes.push(weeks);
     dis.append("div").classed("afterstrike", true)
       .text("average of 2 weeks prior to and after strike")
-
-    /*
-    var afterstrike = plot().data(data.filter(filter("07/9/13", "07/13/13")))
-    var afterstrikeg = exitg.append("g")
-    .attr("transform", "translate(" + [20, 140] + ")")
-    afterstrike(afterstrikeg)
-    */
   })
 
+// ==================================
+// MAP
+// ==================================
+var water = topojson.object(bayarea, bayarea.objects.bayareaGEO);
+var width = 850;
+var height = 500;
+
+var lonlat = [-122.4, 37.8];
+var projection = d3.geo.mercator()
+  .center(lonlat)
+  .scale(77480)
+  .translate([width/2, height/2])
+
+var path = d3.geo.path()
+  .projection(projection);
+
+var g = d3.select("#map svg")
+.attr({width: width, height: height})
+.append("g")
+
+g.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height);
+g.append("path")
+.attr("d", path(water))
+.classed("water", true);
+
+var circles = g.selectAll("circle.pems")
+.data(pemslocs)
+circles
+.enter()
+.append("circle").classed("pems", true)
+
+circles.attr({
+  cx: function(d,i) {
+    return projection([d.lon, d.lat])[0]
+  },
+  cy: function(d,i) {
+    return projection([d.lon, d.lat])[1]
+  },
+  "fill-opacity": 0.7,
+  stroke: function(d,i) { return sensorColors(i) },
+  title: function(d,i) { return d.id }
+})
+
+
+
+//Call initial brush
 brushah();
 
 
-function plot() {
+function plot(useTips) {
   //var width = tributary.sw - cx - 50;
   var width = 250
   var height = 50
@@ -202,17 +266,18 @@ function plot() {
     timeFormat = d3.time.format("%B %d %I%p")
     numFormat = d3.format("3n")
 
-    var hourtip = d3.tip().attr("class", "tip").html(function(d) { 
-      var str = ""
-      str += timeFormat(new Date(d.time));
-      str += " | flow " + numFormat(d.flow);
-      str += " | occupancy " + numFormat(d.lanes);
-      return str
-    })
-    g.call(hourtip)
-
-    bars.on("mouseover", hourtip.show)
-    bars.on("mouseout", hourtip.hide)
+    if(useTips) {
+      var hourtip = d3.tip().attr("class", "tip").html(function(d) {
+        var str = ""
+        str += timeFormat(new Date(d.time));
+        str += " | flow " + numFormat(d.flow);
+        str += " | occupancy " + numFormat(d.lanes);
+        return str
+      })
+      g.call(hourtip)
+      bars.on("mouseover", hourtip.show)
+      bars.on("mouseout", hourtip.hide)
+    }
 
     var tickFormat = d3.time.format("%B %d")
     var xAxis = d3.svg.axis()
@@ -244,7 +309,11 @@ function plot() {
       width: xscale(end) - xscale(start)
     })
     var filtered = data.filter(filter(start, end));
-    return d3.sum(filtered, function(d) { return d.flow })
+    return {
+      flow: d3.sum(filtered, function(d) { return d.flow }),
+      lanes: d3.sum(filtered, function(d) { return d.lanes }) / filtered.length
+    }
+
   }
   return chart;
 }
