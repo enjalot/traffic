@@ -51,26 +51,50 @@ function brushah() {
   var band = brush.extent()[1] - offset - strikeStart
   offset /= HOUR
   band /= HOUR
-  sums = strikes.map(function(chart) {
-    chart.highlight(offset, band);
+  var sums = strikes.map(function(chart) {
+    return chart.highlight(offset, band);
+  })
+  var avgsums = afterstrikes.map(function(weeks) {
+    return d3.sum(weeks, function(week) {
+      var start = d3.time.hour.offset(week[0].time, offset)
+      var end = d3.time.hour.offset(week[0].time, offset + band);
+      var filtered = week.filter(filter(start, end));
+      return d3.sum(filtered, function(d) { return d.flow })
+    }) / weeks.length
   })
 
-  var sumscale = d3.scale.linear()
-  .domain([0, d3.max(sums)])
-  .range([0,200]);
+  var charts = d3.selectAll("div.chart");
+  charts.each(function(d,i) {
+    var sumscale = d3.scale.linear()
+      .domain([0, d3.max([sums[i], avgsums[i]])])
+      .range([0,80]);
 
-  /*
-  var sumbars = svg.selectAll("rect.sums").data(sums)
-  sumbars.enter()
-  .append("rect").classed("sums", true)
-  sumbars.attr({
-    x: 507,
-    y: function(d,i) { return 188 + i * 104 + (i > 1 ? 40 : 0) },
-    width: function(d) { return sumscale(d) },
-    height: 50
+    var sumbar = d3.select(this).select("svg")
+      .selectAll("rect.sumbar").data([sums[i]])
+    sumbar.enter()
+      .append("rect").classed("sumbar", true)
+    sumbar
+    .attr({
+      x: 290,
+      y: 30,
+      width: sumscale(sums[i]),
+      height: 40
+    })
+
+    var avgsumbar = d3.select(this).select("svg")
+      .selectAll("rect.avgsumbar").data([avgsums[i]])
+    avgsumbar.enter()
+      .append("rect").classed("avgsumbar", true)
+    avgsumbar
+    .attr({
+      x: 290,
+      y: 120,
+      width: sumscale(avgsums[i]),
+      height: 40
+    })
+
+
   })
-  console.log("sums", sums)
-  */
 }
 
 var brushSvg = d3.select("#brush svg")
@@ -94,7 +118,7 @@ charts.enter()
     dis.style("border", "1px solid " + sensorColors(i));
 
     var svg = dis.append("svg")
-      .attr({width: 350, height: 180 })
+      .attr({width: 400, height: 180 })
 
     var strike = plot().data(data.filter(filter(strikeStart, strikeEnd)))
     var strikeg = svg.append("g")
@@ -114,12 +138,12 @@ charts.enter()
     weeks.forEach(function(week) {
       var afterstrike = plot().data(week);
       var afterstrikeg = svg.append("g")
-        .style("opacity", 0.25)
+        .style("opacity", 0.50)
         .attr("transform", "translate(" + [20, 110] + ")")
       afterstrike(afterstrikeg)
-      afterstrikes.push(strike);
       afterstrikeg.selectAll(".x-axis").remove()
     })
+    afterstrikes.push(weeks);
     dis.append("div").classed("afterstrike", true)
       .text("average of 2 weeks prior to and after strike")
 
@@ -136,7 +160,7 @@ brushah();
 
 function plot() {
   //var width = tributary.sw - cx - 50;
-  var width = 300
+  var width = 250
   var height = 50
   var data;
   var xscale = d3.time.scale()
@@ -175,9 +199,16 @@ function plot() {
       fill: function(d) { return occupyColor(d.lanes) }
     })
 
-    format = d3.time.format("%B %d %H:%M")
+    timeFormat = d3.time.format("%B %d %I%p")
+    numFormat = d3.format("3n")
 
-    var hourtip = d3.tip().attr("class", "tip").html(function(d) { return format(new Date(d.time)) + " flow " + d.flow })
+    var hourtip = d3.tip().attr("class", "tip").html(function(d) { 
+      var str = ""
+      str += timeFormat(new Date(d.time));
+      str += " | flow " + numFormat(d.flow);
+      str += " | occupancy " + numFormat(d.lanes);
+      return str
+    })
     g.call(hourtip)
 
     bars.on("mouseover", hourtip.show)
@@ -198,7 +229,7 @@ function plot() {
     .attr("transform", "rotate(45)translate(17,-5)")
 
     highlight = g.append("rect").classed("highlight", true)
-    .attr({height: height})
+    .attr({height: 140})
   }
   chart.data = function(_) {
     if(!arguments.length) return data;
