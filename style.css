@@ -61,6 +61,16 @@ rect.hova-week {
   font-size: 24px;
 }
 
+
+.low {
+  color: #71CFB9;
+  font-weight: bold;
+}
+.high {
+  color: #8426DB;
+  font-weight: bold;
+}
+
 #map .water {
   fill: #fff;
   stroke: #000000;

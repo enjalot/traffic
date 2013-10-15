@@ -23,13 +23,24 @@
       <svg></svg>
     </div>
     <div id="description">
+      <p>
       The map shows where each sensor is located. Sliding the yellow bar will calculate average flow and occupancy during the highlighted time period of the strike, and calculate an average for the other weeks.
+      </p>
+      <p>
+      The bar charts have their height scaled to the <b>flow</b> which is the number of cars that cross the sensors in an hour. 
+      <br>
+      The color comes from a scale to show
+      <span class="scaletext"></span> <b>occupancy</b>, 
+      where occupancy is the percentage of time that a car is on top of it. The threshold for high occupancy is 
+      <span class="high">30%</span>.
+      </p>
     </div>
     <div id="map"><svg></svg></div>
     <div id="footer">
       
       This project was made with help from <a href="https://twitter.com/lewislehe">Lewis</a> and <a href="https://plus.google.com/u/0/105986861762121711874/about">Jean</a>.<br>
-      It is part of a <a href="">larger effort</a> to understand the BART labor dispute in more detail.
+      It is part of a <a href="http://enjalot.github.io/bart/">larger effort</a> to understand the BART labor dispute in more detail. 
+      The data used here <a href="https://github.com/enjalot/bart/tree/master/data/traffic%20data">is available</a> and comes from <a href="http://pems.dot.ca.gov/">PeMS</a>.
     </div>
   </div>
     <!-- load the data synchronously -->

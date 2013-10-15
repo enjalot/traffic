@@ -31,9 +31,17 @@ numFormat = d3.format("3n")
 var strikeStart = +new Date("07/01/2013")
 var strikeEnd = +new Date("07/06/2013")
 var occupyColor = d3.scale.linear()
-  .domain([0, 0.3])
-  .range(["#71CFB9", "#8426DB"])
+  .domain([0, 0.3, 1])
+  .range(["#71CFB9", "#8426DB", "#8426DB"])
   .interpolate(d3.interpolateHcl);
+  
+var txt = "low to high";
+d3.select(".scaletext").selectAll("span").data(txt.split(""))
+.enter().append("span")
+.text(function(d) { return d })
+.each(function(d,i) {
+  d3.select(this).style("color", occupyColor(i/txt.length))
+})
 var sensorColors = d3.scale.category20();
 
 var cw = 400;
