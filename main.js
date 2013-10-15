@@ -42,6 +42,18 @@ d3.select(".scaletext").selectAll("span").data(txt.split(""))
 .each(function(d,i) {
   d3.select(this).style("color", occupyColor(i/txt.length))
 })
+
+txt = "height scaled"
+var tyscale = d3.scale.linear().domain([-1, 1]).range([12, 29])
+d3.select(".heighttext").selectAll("span").data(txt.split(""))
+.enter().append("span")
+.text(function(d) { return d })
+.each(function(d,i) {
+  d3.select(this).style("font-size", tyscale(Math.sin(i/txt.length*1*Math.PI)) + "px")
+})
+
+
+
 var sensorColors = d3.scale.category20();
 
 var cw = 400;
