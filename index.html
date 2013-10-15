@@ -7,9 +7,30 @@
   <body>
 
   <div id="content">
+    <div id="intro">
+      The following visualization compares traffic sensor data on the Bay Bridge the <a class="hova-week">week of the July BART strike</a>
+      with a visual average of the <a class="hova-2">2 weeks before and after the strike</a>. <br>
+      </p>
+
+    </div>
     <div id="charts"></div>
-    <div id="brush"><svg></svg></div>
+    <div id="dates">
+    <span class="hours"></span> hours<br>
+    <span class="dates"></span> 
+  </div>
+
+    <div id="brush">
+      <svg></svg>
+    </div>
+    <div id="description">
+      The map shows where each sensor is located. Sliding the yellow bar will calculate average flow and occupancy during the highlighted time period of the strike, and calculate an average for the other weeks.
+    </div>
     <div id="map"><svg></svg></div>
+    <div id="footer">
+      
+      This project was made with help from <a href="https://twitter.com/lewislehe">Lewis</a> and <a href="https://plus.google.com/u/0/105986861762121711874/about">Jean</a>.<br>
+      It is part of a <a href="">larger effort</a> to understand the BART labor dispute in more detail.
+    </div>
   </div>
     <!-- load the data synchronously -->
     <script src="data/402814.js"></script>

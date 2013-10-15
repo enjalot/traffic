@@ -24,6 +24,9 @@ function filter(start, end) {
     return d.time < new Date(end) && d.time > new Date(start)
   }
 }
+timeFormat = d3.time.format("%B %d %I%p")
+numFormat = d3.format("3n")
+
 
 var strikeStart = +new Date("07/01/2013")
 var strikeEnd = +new Date("07/06/2013")
@@ -47,8 +50,9 @@ var brush = d3.svg.brush()
 .on("brush", brushah)
 .extent([strikeStart, +d3.time.hour.offset(new Date(strikeStart), band)])
 function brushah() {
-  var offset = brush.extent()[0] - strikeStart;
-  var band = brush.extent()[1] - offset - strikeStart
+  var extent = brush.extent();
+  var offset = extent[0] - strikeStart;
+  var band = extent[1] - offset - strikeStart
   offset /= HOUR
   band /= HOUR
   var sums = strikes.map(function(chart) {
@@ -70,6 +74,11 @@ function brushah() {
       return d3.sum(filtered, function(d) { return d.lanes}) / filtered.length
     }) / weeks.length
   })
+
+
+  var tFormat = d3.time.format("%B %d, %I%p")
+  d3.select(".dates").html(tFormat(new Date(extent[0])).toLowerCase() + " <br> " + tFormat(new Date(extent[1])).toLowerCase())
+  d3.select(".hours").html(Math.floor(band))
 
   var charts = d3.selectAll("div.chart");
   charts.each(function(d,i) {
@@ -97,6 +106,17 @@ function brushah() {
       height: 40
     }).style("fill", sumColor(sums[i].lanes))
 
+    var sumtip = d3.tip().attr("class", "tip").html(function(d) {
+        var str = ""
+        str += " flow " + numFormat(d.flow);
+        str += " <br>occupancy " + numFormat(Math.floor(d.lanes * 10000) / 10000);
+        return str
+      })
+    sumbar.on("mouseover", sumtip.show)
+    sumbar.on("mouseout", sumtip.hide)
+    sumbar.call(sumtip)
+
+
     var avgsumbar = d3.select(this).select("svg")
       .selectAll("rect.avgsumbar").data([avgflows[i]])
     avgsumbar.enter()
@@ -108,6 +128,18 @@ function brushah() {
       width: sumscale(avgflows[i]),
       height: 40
     }).style("fill", sumColor(avglanes[i]))
+
+    var avgsumtip = d3.tip().attr("class", "tip").html(function(d) {
+        var str = ""
+        str += " flow " + numFormat(avgflows[i]);
+        str += " <br>occupancy " + numFormat(Math.floor(avglanes[i] * 10000) / 10000);
+        return str
+      })
+    avgsumbar.on("mouseover", avgsumtip.show)
+    avgsumbar.on("mouseout", avgsumtip.hide)
+    avgsumbar.call(avgsumtip)
+
+
     d3.selectAll("circle.pems")
       .filter(function(d,j) { return i == j })
       .attr({
@@ -140,6 +172,11 @@ charts.enter()
     var svg = dis.append("svg")
       .attr({width: 400, height: 180 })
 
+    svg.append("rect").classed("hova-week", true)
+    .attr({
+      width: 420, height: 50, x: -20, y: 20
+    })
+
     //generate the plot for the week of the strike
     var strike = plot(true).data(data.filter(filter(strikeStart, strikeEnd)))
     var strikeg = svg.append("g")
@@ -147,6 +184,27 @@ charts.enter()
     strike(strikeg)
     strikes.push(strike);
 
+    var afterstrikeg = svg.append("g")
+      .style("opacity", 0.50)
+      .attr("transform", "translate(" + [20, 110] + ")")
+
+    afterstrikeg.append("rect").classed("hova-2", true)
+      .attr({
+        width: 420, height: 50, x: -20, y: 0
+      })
+    d3.select("a.hova-week").on("mouseover", function() {
+      d3.selectAll("rect.hova-week").style("fill", "#ffff99")
+    })
+    .on("mouseout", function() {
+      d3.selectAll("rect.hova-week").style("fill", "none")
+    })
+
+    d3.select("a.hova-2").on("mouseover", function() {
+      d3.selectAll("rect.hova-2").style("fill", "#ffff99")
+    })
+    .on("mouseout", function() {
+      d3.selectAll("rect.hova-2").style("fill", "none")
+    })
 
     //Generate the plots for the 4 weeks surrounding the strike
     var start = new Date(strikeStart);
@@ -156,13 +214,14 @@ charts.enter()
       data.filter(filter( d3.time.day.offset(start, -7), d3.time.day.offset(end, -7) )),
       data.filter(filter( d3.time.day.offset(start, 7), d3.time.day.offset(end, 7) )),
       data.filter(filter( d3.time.day.offset(start, 14), d3.time.day.offset(end, 14) ))
-    ];
+    ]; 
+
     weeks.forEach(function(week) {
       var afterstrike = plot().data(week);
-      var afterstrikeg = svg.append("g")
-        .style("opacity", 0.50)
-        .attr("transform", "translate(" + [20, 110] + ")")
-      afterstrike(afterstrikeg)
+      var weekg = afterstrikeg.append("g");
+      
+
+      afterstrike(weekg)
       afterstrikeg.selectAll(".x-axis").remove()
     })
     afterstrikes.push(weeks);
@@ -300,15 +359,13 @@ function plot(useTips) {
       fill: function(d) { return occupyColor(d.lanes) }
     })
 
-    timeFormat = d3.time.format("%B %d %I%p")
-    numFormat = d3.format("3n")
-
+    
     if(useTips) {
       var hourtip = d3.tip().attr("class", "tip").html(function(d) {
         var str = ""
         str += timeFormat(new Date(d.time));
-        str += " | flow " + numFormat(d.flow);
-        str += " | occupancy " + numFormat(d.lanes);
+        str += " <br>flow " + numFormat(d.flow);
+        str += " <br>occupancy " + numFormat(d.lanes);
         return str
       })
       g.call(hourtip)

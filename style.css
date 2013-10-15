@@ -1,3 +1,6 @@
+body {
+  font-family: Helvetica, sans;
+}
 #content {
   width: 899px;
   position:absolute;
@@ -8,9 +11,23 @@
   margin: 0px auto;
 }
 
+#dates {
+  float:left;
+  margin-left: 100px;
+}
+
 #charts {
   width: 899px;
   margin: 0px auto;
+}
+#intro {
+  padding: 10px 50px 10px 10px;
+}
+#description {
+  padding: 10px 50px 10px 10px;
+}
+#footer {
+  padding: 10px 50px 10px 10px;
 }
 #map {
   width: 899px;
@@ -22,6 +39,26 @@
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
+}
+
+.hova-week, .hova-2 {
+  border-bottom: 1px dashed #999;
+  font-weight: 700;
+  cursor: default;
+  fill: none;
+}
+rect.hova-week {
+  opacity: 0.5;
+
+}
+.hova-week:hover, .hova-2:hover {
+  color: #848484;
+}
+
+.dates {
+}
+.hours {
+  font-size: 24px;
 }
 
 #map .water {
